@@ -7,7 +7,7 @@
 
 //トークンの種類
 typedef enum{
-	TK_RESERBED,	//記号
+	TK_RESERVED,	//記号
 	TK_NUM,		//整数トークン
 	TK_EOF,		//入力の終わりを表すトークン
 }TokenKind;
@@ -48,7 +48,7 @@ bool consume(char op){
 //次のトークンが期待しいる記号の時には、トークンを1つ読み進める。
 //それ以外の場合にはエラーを報告する。
 void expect(char op){
-	if(token->kind != TK_RESERBED || token->str[0] != op){
+	if(token->kind != TK_RESERVED || token->str[0] != op){
 		error("'%c'ではありません", op);
 	}		
 	token = token->next;
