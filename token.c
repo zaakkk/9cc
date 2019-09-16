@@ -22,7 +22,7 @@ Vector *tokenize(char *p) {
         }
 
         // Single-letter token
-        if (strchr("+-*", *p)) {
+        if (strchr("+-*/", *p)) {
             add_token(v, *p, p);
             i++;
             p++;
@@ -37,7 +37,7 @@ Vector *tokenize(char *p) {
             continue;
         }
 
-        fprintf(stderr, "cannot tokenize: %s", p);
+        fprintf(stderr, "cannot tokenize: %s\n", p);
         exit(1);
     }
 
