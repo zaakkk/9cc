@@ -5,15 +5,20 @@ int main(int argc, char **argv){
 	}
 		
 	// Tokenize and parse.
-	user_input = argv[1];
-	token = tokenize();
-	Node *node = expr();
+	Vector *tokens = tokenize(argv[1]);
+	Node *node = parse(tokens);
+
+	Vector *irv = gen_ir(node);
+	alloc_regs(irv);
 
 	//Print out the first half of assembly.
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n");
 	printf("main:\n");
 
+	gen_x86(irv);
+
+	/*
 	//Traverse the ASY to emit assembly.
 	gen(node);
 
@@ -21,6 +26,8 @@ int main(int argc, char **argv){
 	// to RAX to make it a program exit code.
 	printf("	pop rax\n");
 	printf("	ret\n");
+	*/
+	
 	return 0;
 		
 }

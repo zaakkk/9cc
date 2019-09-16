@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <stdnoreturn.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -5,59 +7,68 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Token
-//Token kind
-typedef enum{
-	TK_RESERVED,	//記号
-	TK_NUM,		//整数トークン
+//util.c
+noreturn void error(char *fmt, ...);
+
+typedef struct{
+	void **data;
+	int capacity;
+	int len;
+}Vector;
+
+Vector *new_vec(void);
+void vec_push(Vector *v, void *elem);
+
+//token.c
+enum{
+	TK_NUM = 256,		//整数トークン
 	TK_EOF,		//入力の終わりを表すトークン
-}TokenKind;
+};
 
 //Token type
-typedef struct Token Token;
-struct Token{
-	TokenKind kind;	//トークンの型
-	Token *next;	//次の入力トークン
-	int  val;	//kindがTK_NUMの場合、その数値
-	char *str;	//トークン文字列
-	int len;	//token length
+typedef struct{
+	int ty;
+	int val;
+	char *input;
+}Token;
+
+Vector *tokenize(char*p);
+
+//parse.c
+enum{
+	ND_NUM = 256, //Number literal
 };
 
-//Input program
-char *user_input;
+typedef struct Node{
+	int ty;				// Node type
+	struct Node *lhs;	// left-hand side
+	struct Node *rhs;	// right-hand side
+	int val;			// only use ND_NUM
+}Node;
 
-//Current token
-Token *token;
+Node *parse(Vector *tokens);
 
-void error(char *fmt, ...);
-Token *tokenize();
-
-
-//Node
-//抽象構文木のノードの種類
-typedef enum{
-	ND_ADD, // +
-	ND_SUB, // -
-	ND_MUL, // *
-	ND_DIV, // /
-	ND_EQ,	// ==
-	ND_NE,	// !=
-	ND_LT,	// <
-	ND_LE,	// <=
-	ND_NUM,	// Integer
-} NodeKind;
-
-typedef struct Node Node;
-
-//抽象構文木のノードの型
-struct Node{
-	NodeKind kind;	// Node type
-	Node *lhs;	// left-hand side
-	Node *rhs;	// right-hand side
-	int val;	// only use ND_NUM
+//ir.c
+enum{
+	IR_IMM,
+	IR_MOV,
+	IR_RETURN,
+	IR_KILL,
+	IR_NOP,
 };
 
-Node *expr();
+typedef struct{
+	int op;
+	int lhs;
+	int rhs;
+}IR;
 
-//
-void gen(Node *node);
+Vector *gen_ir(Node *node);
+
+//regalloc.c
+
+extern char *regs[];
+void alloc_regs(Vector *irv);
+
+//codegen.c
+void gen_x86(Vector *irv);
