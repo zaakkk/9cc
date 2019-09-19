@@ -1,74 +1,107 @@
+#define _GNU_SOURCE
 #include <assert.h>
-#include <stdnoreturn.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdnoreturn.h>
 #include <string.h>
 
-//util.c
+/// util.c
+
 noreturn void error(char *fmt, ...);
 
-typedef struct{
-	void **data;
-	int capacity;
-	int len;
-}Vector;
+typedef struct {
+  void **data;
+  int capacity;
+  int len;
+} Vector;
 
 Vector *new_vec(void);
 void vec_push(Vector *v, void *elem);
 
-//token.c
-enum{
-	TK_NUM = 256,		//整数トークン
-	TK_EOF,		//入力の終わりを表すトークン
+typedef struct {
+  Vector *keys;
+  Vector *vals;
+} Map;
+
+Map *new_map(void);
+void map_put(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
+bool map_exists(Map *map, char *key);
+
+/// util_test.c
+
+void util_test();
+
+/// token.c
+
+enum {
+  TK_NUM = 256, // Number literal
+  TK_IDENT,     // Identifier
+  TK_RETURN,    // "return"
+  TK_EOF,       // End marker
 };
 
-//Token type
-typedef struct{
-	int ty;
-	int val;
-	char *input;
-}Token;
+// Token type
+typedef struct {
+  int ty;      // Token type
+  int val;     // Number literal
+  char *name;  // Identifier
+  char *input; // Token string (for error reporting)
+} Token;
 
-Vector *tokenize(char*p);
+Vector *tokenize(char *p);
 
-//parse.c
-enum{
-	ND_NUM = 256, //Number literal
+/// parse.c
+
+enum {
+  ND_NUM = 256,     // Number literal
+  ND_IDENT,         // Identifier
+  ND_RETURN,        // Return statement
+  ND_COMP_STMT,     // Compound statement
+  ND_EXPR_STMT,     // Expressions tatement
 };
 
-typedef struct Node{
-	int ty;				// Node type
-	struct Node *lhs;	// left-hand side
-	struct Node *rhs;	// right-hand side
-	int val;			// only use ND_NUM
-}Node;
+typedef struct Node {
+  int ty;            // Node type
+  struct Node *lhs;  // left-hand side
+  struct Node *rhs;  // right-hand side
+  int val;           // Number literal
+  char *name;        // Identifier
+  struct Node *expr; // "return" or expresson stmt
+  Vector *stmts;     // Compound statement
+} Node;
 
 Node *parse(Vector *tokens);
 
-//ir.c
-enum{
-	IR_IMM,
-	IR_MOV,
-	IR_RETURN,
-	IR_KILL,
-	IR_NOP,
+/// ir.c
+
+enum {
+  IR_IMM,
+  IR_MOV,
+  IR_RETURN,
+  IR_ALLOCA,
+  IR_LOAD,
+  IR_STORE,
+  IR_KILL,
+  IR_NOP,
 };
 
-typedef struct{
-	int op;
-	int lhs;
-	int rhs;
-}IR;
+typedef struct {
+  int op;
+  int lhs;
+  int rhs;
+} IR;
 
 Vector *gen_ir(Node *node);
 
-//regalloc.c
+/// regalloc.c
 
 extern char *regs[];
 void alloc_regs(Vector *irv);
 
-//codegen.c
+/// codegen.c
 void gen_x86(Vector *irv);
