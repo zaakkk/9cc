@@ -24,7 +24,7 @@ static Vector *scan(char *p) {
     }
 
     // Single-letter token
-    if (strchr("+-*/;=()", *p)) {
+    if (strchr("+-*/;=(),", *p)) {
       add_token(v, *p, p);
       i++;
       p++;
@@ -35,12 +35,12 @@ static Vector *scan(char *p) {
     if (isalpha(*p) || *p == '_') {
       int len = 1;
       while (isalpha(p[len]) || isdigit(p[len]) || p[len] == '_')
-	len++;
+	      len++;
 
       char *name = strndup(p, len);
       int ty = (intptr_t)map_get(keywords, name);
       if (!ty)
-	ty = TK_IDENT;
+      	ty = TK_IDENT;
 
       Token *t = add_token(v, ty, p);
       t->name = name;
